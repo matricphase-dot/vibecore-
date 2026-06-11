@@ -1,11 +1,53 @@
-﻿services:
+services:
+  # -------------------------------------
+  # 1. Backend API (Node.js)
+  # -------------------------------------
   - type: web
-    name: vibecore
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port \
+    name: vibecore-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
+      # These will show up in the Render dashboard for you to fill in
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
       - key: GROQ_API_KEY
         sync: false
-      - key: REDIS_URL
+      
+      # Auto-generate a secure random string for JWT
+      - key: JWT_SECRET
+        generateValue: true
+      
+      # We will set CORS to allow all temporarily, but you should update it
+      # to your frontend's Render URL once it's live
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: FRONTEND_URL
+        value: "*"
+
+  # -------------------------------------
+  # 2. Frontend App (React/Vite)
+  # -------------------------------------
+  - type: web
+    name: vibecore-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      # Automatically links the frontend to the backend's live Render URL!
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: vibecore-backend
+          envVarKey: RENDER_EXTERNAL_URL
+          
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
         sync: false

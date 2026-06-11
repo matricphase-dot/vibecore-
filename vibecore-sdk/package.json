@@ -1,0 +1,10 @@
+{
+  "name": "vibecore-sdk",
+  "version": "1.0.0",
+  "description": "VibeCore Cost Optimization Proxy SDK Client",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {}
+}
