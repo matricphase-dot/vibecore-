@@ -154,7 +154,7 @@ export default function Dashboard({ session }) {
         alert(`Razorpay checkout started. Order ID: ${order.orderId}. Simulating payment capture webhook upgrading you to ${plan}...`);
         
         // Call webhook directly or mock capture callback locally
-        const verifyRes = await fetch('http://localhost:3001/api/payments/razorpay/webhook', {
+        const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/payments/razorpay/webhook`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export default function Dashboard({ session }) {
 
         alert(`PayPal transaction started. Order ID: ${order.orderId}. Simulating capture callback...`);
 
-        const verifyRes = await fetch('http://localhost:3001/api/payments/paypal/webhook', {
+        const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/payments/paypal/webhook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -454,7 +454,7 @@ export default function Dashboard({ session }) {
               </div>
               <div className="bg-gray-950 rounded-lg p-4 font-mono text-xs text-gray-300 relative border border-gray-900">
                 <button 
-                  onClick={() => copyToClipboard(`const OpenAI = require('openai');\nconst openai = new OpenAI({\n  apiKey: '${keys[0]?.key_prefix || 'vc-xxxxxxxx'}...', \n  baseURL: 'http://localhost:3001/api/chat'\n});`, 'snippet')}
+                  onClick={() => copyToClipboard(`const OpenAI = require('openai');\nconst openai = new OpenAI({\n  apiKey: '${keys[0]?.key_prefix || 'vc-xxxxxxxx'}...', \n  baseURL: '${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat'\n});`, 'snippet')}
                   className="absolute top-2 right-2 text-gray-500 hover:text-white transition-colors"
                 >
                   {copiedSnippet ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
@@ -464,7 +464,7 @@ export default function Dashboard({ session }) {
 
 const openai = new OpenAI({
   apiKey: '${keys[0] ? keys[0].key_prefix + '...' : 'YOUR_API_KEY'}',
-  baseURL: 'http://localhost:3001/api/chat' // Redirect endpoint to VibeCore Proxy
+  baseURL: '${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat' // Redirect endpoint to VibeCore Proxy
 });`}
                 </pre>
               </div>

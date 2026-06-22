@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Cpu, Zap, TrendingDown, Layers, BarChart3, ShieldCheck, ArrowRight, Code } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { apiFetch } from '../lib/api';
 
 export default function Landing({ session }) {
   const [globalStats, setGlobalStats] = useState({
@@ -12,8 +13,7 @@ export default function Landing({ session }) {
 
   useEffect(() => {
     // Fetch global community stats
-    fetch('http://localhost:3001/api/chat/summary')
-      .then(res => res.json())
+    apiFetch('/api/chat/summary')
       .then(data => {
         if (data && !data.error) {
           setGlobalStats({

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/api';
+import { supabase, apiFetch } from '../lib/api';
 import { ArrowRight, Mail, Lock } from 'lucide-react';
 
 export default function Register() {
@@ -27,17 +27,10 @@ export default function Register() {
 
     try {
       // 1. Register user via custom backend to auto-generate default API key
-      const response = await fetch('http://localhost:3001/api/auth/signup', {
+      const body = await apiFetch('/api/auth/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-
-      const body = await response.json();
-
-      if (!response.ok) {
-        throw new Error(body.error || 'Registration failed');
-      }
 
       // 2. Sign in immediately to create local session
       const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({

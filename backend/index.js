@@ -49,11 +49,18 @@ app.use((err, req, res, next) => {
 });
 
 // 5. Server Startup & Caching pipeline Warmup
-app.listen(PORT, async () => {
-  console.log(`🚀 VibeCore Cost Optimization Proxy Backend running on port ${PORT}`);
-  try {
-    await warmup();
-  } catch (error) {
-    console.error('Failed to trigger semantic cache warmup on boot:', error);
-  }
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, async () => {
+    console.log(`🚀 VibeCore Cost Optimization Proxy Backend running on port ${PORT}`);
+    try {
+      await warmup();
+    } catch (error) {
+      console.error('Failed to trigger semantic cache warmup on boot:', error);
+    }
+  });
+} else {
+  // Export for serverless environments (like Vercel)
+  warmup().catch(err => console.error('Warmup error:', err));
+}
+
+export default app;
