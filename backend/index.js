@@ -21,11 +21,11 @@ app.use(express.urlencoded({ extended: true, limit: '64kb' }));
 // 2. CORS configurations whitelisting frontend origins
 const allowedOrigins = process.env.CORS_ORIGINS 
   ? process.env.CORS_ORIGINS.split(',') 
-  : ['http://localhost:5173', 'http://localhost:3000'];
+  : ['*']; // Allow all by default if not strictly configured
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Blocked by CORS policy whitelist'));
