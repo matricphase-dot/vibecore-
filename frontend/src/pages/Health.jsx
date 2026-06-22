@@ -114,19 +114,19 @@ export default function Health() {
                 <p className="text-xs text-gray-400">Stores core profile registries, developer API keys, and comprehensive usage logs.</p>
               </div>
 
-              {/* Redis Card */}
+              {/* Cache Card */}
               <div className="card text-left space-y-2">
                 <div className="flex justify-between items-center">
-                  <h4 className="font-bold text-white text-sm">Redis Cache (Upstash)</h4>
+                  <h4 className="font-bold text-white text-sm">Memory Cache</h4>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                    health?.checks?.redis 
+                    health?.checks?.cache?.startsWith('in-memory')
                       ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
                       : 'bg-red-500/10 text-red-400 border border-red-500/20'
                   }`}>
-                    {health?.checks?.redis ? 'Online' : 'Offline'}
+                    {health?.checks?.cache?.startsWith('in-memory') ? 'Online' : 'Offline'}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400">Handles exact matching cache keys and high-speed list query vectors index indices.</p>
+                <p className="text-xs text-gray-400">High-speed local cache handling exact matching keys and indices. Status: <span className="font-mono text-gray-300">{health?.checks?.cache}</span></p>
               </div>
 
               {/* Gemma Card */}
