@@ -22,7 +22,10 @@ router.get('/', async (req, res) => {
       .limit(1);
 
     checks.supabase = !dbError;
-    if (dbError) console.error('Health → Supabase error:', dbError.message);
+    if (dbError) {
+      console.error('Health → Supabase error:', dbError.message);
+      checks.supabase_error = dbError.message;
+    }
 
     // 2. Cache stats (always healthy — in-memory)
     const stats = cache.stats();
