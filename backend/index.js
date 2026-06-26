@@ -56,4 +56,20 @@ app.listen(PORT, async () => {
   } catch (error) {
     console.error('Failed to trigger semantic cache warmup on boot:', error);
   }
+
+  // 6. Keep-alive self-ping to prevent Render free tier from sleeping
+  // Pings the health endpoint every 10 minutes (600,000ms)
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  const PING_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${SELF_URL}/api/health`);
+      console.log(`🏓 Keep-alive ping sent → status: ${res.status} at ${new Date().toISOString()}`);
+    } catch (err) {
+      console.warn(`⚠️ Keep-alive ping failed: ${err.message}`);
+    }
+  }, PING_INTERVAL_MS);
+
+  console.log(`🔁 Keep-alive self-ping scheduled every 10 minutes to ${SELF_URL}/api/health`);
 });
