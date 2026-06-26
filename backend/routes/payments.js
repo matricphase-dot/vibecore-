@@ -42,7 +42,8 @@ router.post('/razorpay/order', validateApiKeyOrJwt, async (req, res) => {
       orderId: `mock_order_${Date.now()}`,
       amount: pricing.inr,
       currency: 'INR',
-      plan
+      plan,
+      keyId: process.env.RAZORPAY_KEY_ID || 'placeholder_id'
     });
   }
 
@@ -61,7 +62,8 @@ router.post('/razorpay/order', validateApiKeyOrJwt, async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      plan
+      plan,
+      keyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
     console.error('Razorpay order creation error:', error);
@@ -158,7 +160,8 @@ router.post('/paypal/order', validateApiKeyOrJwt, async (req, res) => {
   if (isMockEnabled) {
     return res.json({
       orderId: `mock_paypal_order_${Date.now()}`,
-      status: 'APPROVED'
+      status: 'APPROVED',
+      clientId: process.env.PAYPAL_CLIENT_ID || 'placeholder_id'
     });
   }
 
@@ -184,7 +187,8 @@ router.post('/paypal/order', validateApiKeyOrJwt, async (req, res) => {
     const order = await paypalClient.execute(request);
     return res.json({
       orderId: order.result.id,
-      status: order.result.status
+      status: order.result.status,
+      clientId: process.env.PAYPAL_CLIENT_ID
     });
   } catch (error) {
     console.error('PayPal order creation error:', error);

@@ -29,6 +29,7 @@ export default function Dashboard({ session }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [paypalOrderData, setPaypalOrderData] = useState(null);
 
   const navigate = useNavigate();
 
@@ -47,6 +48,76 @@ export default function Dashboard({ session }) {
       sessionStorage.removeItem('vc_newly_created_key');
     }
   }, []);
+
+  // Effect to load and initialize PayPal Smart Buttons
+  useEffect(() => {
+    if (paypalOrderData && !paypalOrderData.orderId.startsWith('mock_')) {
+      const renderPayPalButtons = async () => {
+        try {
+          const scriptId = 'paypal-sdk-script';
+          let script = document.getElementById(scriptId);
+          if (script) {
+            // Remove old script to allow re-initialization with correct client ID
+            script.remove();
+            if (window.paypal) delete window.paypal;
+          }
+
+          script = document.createElement('script');
+          script.id = scriptId;
+          script.src = `https://www.paypal.com/sdk/js?client-id=${paypalOrderData.clientId}`;
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+          });
+
+          if (window.paypal) {
+            window.paypal.Buttons({
+              createOrder: function(data, actions) {
+                return paypalOrderData.orderId;
+              },
+              onApprove: async function(data, actions) {
+                alert('Payment authorized successfully! Processing your upgrade...');
+                setPaypalOrderData(null);
+                setLoading(true);
+                
+                // Poll user profile to verify upgrade
+                let attempts = 0;
+                const interval = setInterval(async () => {
+                  attempts++;
+                  const { data: updatedProfile } = await supabase
+                    .from('profiles')
+                    .select('plan')
+                    .eq('id', session.user.id)
+                    .single();
+
+                  if ((updatedProfile && updatedProfile.plan === paypalOrderData.plan) || attempts >= 15) {
+                    clearInterval(interval);
+                    setLoading(false);
+                    if (updatedProfile && updatedProfile.plan === paypalOrderData.plan) {
+                      alert(`Congratulations! Your account has been upgraded to ${paypalOrderData.plan.toUpperCase()}!`);
+                      fetchProfile();
+                    } else {
+                      alert('Upgrade check timed out. Please refresh the page in a few moments.');
+                    }
+                  }
+                }, 2500);
+              },
+              onError: function(err) {
+                console.error('PayPal button error:', err);
+                alert('PayPal checkout failed. Please try again.');
+              }
+            }).render('#paypal-button-container');
+          }
+        } catch (err) {
+          console.error('PayPal load error:', err);
+          alert('Failed to load PayPal checkout buttons');
+        }
+      };
+      
+      setTimeout(renderPayPalButtons, 100);
+    }
+  }, [paypalOrderData]);
 
   const fetchProfile = async () => {
     try {
@@ -139,7 +210,7 @@ export default function Dashboard({ session }) {
     }
   };
 
-  // Checkout Upgrade (Razorpay/PayPal mock triggers)
+  // Checkout Upgrade (Razorpay/PayPal SDK checkouts with mock fallbacks)
   const handleUpgrade = async (plan, gateway) => {
     try {
       setLoading(true);
@@ -149,39 +220,96 @@ export default function Dashboard({ session }) {
           body: JSON.stringify({ plan })
         });
         
-        // Simulating Razorpay SDK flow in standard browser
-        // In real integration, we load window.Razorpay checkout modal
-        alert(`Razorpay checkout started. Order ID: ${order.orderId}. Simulating payment capture webhook upgrading you to ${plan}...`);
-        
-        // Call webhook directly or mock capture callback locally
-        const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/payments/razorpay/webhook`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-razorpay-signature': 'webhook-signature-mock-verification',
-            'x-razorpay-event-id': `event_${Date.now()}`
-          },
-          body: JSON.stringify({
-            event: 'payment.captured',
-            id: `evt_${Date.now()}`,
-            payload: {
-              payment: {
-                entity: {
-                  notes: {
-                    userId: session.user.id,
-                    plan
+        const isMock = order.orderId.startsWith('mock_');
+
+        if (isMock) {
+          alert(`[MOCK MODE] Razorpay checkout started. Order ID: ${order.orderId}. Simulating payment capture webhook upgrading you to ${plan}...`);
+          
+          const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/payments/razorpay/webhook`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-razorpay-signature': 'webhook-signature-mock-verification',
+              'x-razorpay-event-id': `event_${Date.now()}`
+            },
+            body: JSON.stringify({
+              event: 'payment.captured',
+              id: `evt_${Date.now()}`,
+              payload: {
+                payment: {
+                  entity: {
+                    notes: {
+                      userId: session.user.id,
+                      plan
+                    }
                   }
                 }
               }
-            }
-          })
-        });
+            })
+          });
 
-        if (verifyRes.ok) {
-          alert('Plan upgraded successfully! Refreshing dashboard...');
-          fetchProfile();
+          if (verifyRes.ok) {
+            alert('Plan upgraded successfully! Refreshing dashboard...');
+            fetchProfile();
+          } else {
+            alert('Webhook verification failed locally.');
+          }
         } else {
-          alert('Webhook verification failed locally.');
+          // --- REAL RAZORPAY CHECKOUT INTEGRATION ---
+          if (!window.Razorpay) {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+              script.onload = resolve;
+              script.onerror = reject;
+              document.body.appendChild(script);
+            });
+          }
+
+          const options = {
+            key: order.keyId,
+            amount: order.amount,
+            currency: order.currency,
+            name: 'VibeCore',
+            description: `Upgrade to ${plan} Plan`,
+            order_id: order.orderId,
+            prefill: {
+              email: session.user.email,
+            },
+            theme: {
+              color: '#10b981'
+            },
+            handler: async function (response) {
+              alert('Payment authorized successfully! Waiting for webhook capture...');
+              let attempts = 0;
+              const interval = setInterval(async () => {
+                attempts++;
+                const { data: updatedProfile } = await supabase
+                  .from('profiles')
+                  .select('plan')
+                  .eq('id', session.user.id)
+                  .single();
+
+                if ((updatedProfile && updatedProfile.plan === plan) || attempts >= 15) {
+                  clearInterval(interval);
+                  if (updatedProfile && updatedProfile.plan === plan) {
+                    alert(`Congratulations! Your account has been upgraded to ${plan.toUpperCase()}!`);
+                    fetchProfile();
+                  } else {
+                    alert('Upgrade check timed out. Please refresh the page in a few moments.');
+                  }
+                }
+              }, 2500);
+            },
+            modal: {
+              ondismiss: function () {
+                setLoading(false);
+              }
+            }
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.open();
         }
 
       } else {
@@ -191,34 +319,47 @@ export default function Dashboard({ session }) {
           body: JSON.stringify({ plan })
         });
 
-        alert(`PayPal transaction started. Order ID: ${order.orderId}. Simulating capture callback...`);
+        const isMock = order.orderId.startsWith('mock_');
 
-        const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/payments/paypal/webhook`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: `paypal_evt_${Date.now()}`,
-            event_type: 'PAYMENT.CAPTURE.COMPLETED',
-            resource: {
-              custom_id: JSON.stringify({
-                userId: session.user.id,
-                plan
-              })
-            }
-          })
-        });
+        if (isMock) {
+          alert(`[MOCK MODE] PayPal transaction started. Order ID: ${order.orderId}. Simulating capture callback...`);
 
-        if (verifyRes.ok) {
-          alert('Plan upgraded successfully! Refreshing dashboard...');
-          fetchProfile();
+          const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/payments/paypal/webhook`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: `paypal_evt_${Date.now()}`,
+              event_type: 'PAYMENT.CAPTURE.COMPLETED',
+              resource: {
+                custom_id: JSON.stringify({
+                  userId: session.user.id,
+                  plan
+                })
+              }
+            })
+          });
+
+          if (verifyRes.ok) {
+            alert('Plan upgraded successfully! Refreshing dashboard...');
+            fetchProfile();
+          } else {
+            alert('Webhook simulation failed.');
+          }
         } else {
-          alert('Webhook simulation failed.');
+          // --- REAL PAYPAL CHECKOUT INTEGRATION ---
+          setPaypalOrderData({
+            orderId: order.orderId,
+            clientId: order.clientId,
+            plan
+          });
         }
       }
     } catch (err) {
       alert(err.message || 'Payment processing failed');
     } finally {
-      setLoading(false);
+      if (!paypalOrderData || paypalOrderData.orderId.startsWith('mock_')) {
+        setLoading(false);
+      }
     }
   };
 
@@ -623,6 +764,30 @@ const openai = new OpenAI({
           </div>
         )}
       </main>
+
+      {/* PayPal Modal Overlay */}
+      {paypalOrderData && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl relative">
+            <h3 className="text-lg font-bold text-white tracking-tight">Complete PayPal Payment</h3>
+            <p className="text-xs text-gray-400">
+              Please complete the payment below to upgrade to the <span className="text-green-400 font-semibold uppercase">{paypalOrderData.plan}</span> plan.
+            </p>
+            
+            <div id="paypal-button-container" className="min-h-[150px] w-full flex items-center justify-center py-2"></div>
+            
+            <button 
+              onClick={() => {
+                setPaypalOrderData(null);
+                setLoading(false);
+              }}
+              className="w-full btn-secondary py-2 text-xs font-semibold hover:bg-gray-800 transition-colors"
+            >
+              Cancel Payment
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
