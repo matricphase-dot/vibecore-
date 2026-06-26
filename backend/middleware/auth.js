@@ -55,7 +55,8 @@ export async function validateApiKeyOrJwt(req, res, next) {
       .single();
 
     if (profileError || !profile) {
-      return res.status(404).json({ error: 'Profile registry not found' });
+      console.error('Middleware profile lookup error:', profileError);
+      return res.status(404).json({ error: 'Profile registry not found', details: profileError?.message });
     }
 
     req.user = {
