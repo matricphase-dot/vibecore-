@@ -23,6 +23,19 @@ router.post('/signup', async (req, res) => {
 
     const user = authData.user;
 
+    // Create profile row (may already exist via Supabase trigger, upsert to be safe)
+    const { error: profileError } = await supabase.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      credits: 100,
+      is_admin: false,
+      plan: 'free'
+    }, { onConflict: 'id' });
+
+    if (profileError) {
+      console.error('Failed to create profile for user:', profileError);
+    }
+
     // Generate Initial API Key (20 random bytes as hex = 40 chars)
     const rawKey = `vc-${crypto.randomBytes(20).toString('hex')}`;
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
