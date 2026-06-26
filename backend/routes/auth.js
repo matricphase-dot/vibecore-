@@ -38,7 +38,7 @@ router.post('/signup', async (req, res) => {
     // Generate Initial API Key (20 random bytes as hex = 40 chars)
     const rawKey = `vc-${crypto.randomBytes(20).toString('hex')}`;
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
-    const keyPrefix = rawKey.substring(0, 8);
+    const keyPrefix = rawKey.substring(0, 12);
 
     const { error: keyError } = await supabase.from('api_keys').insert({
       user_id: user.id,
@@ -49,7 +49,9 @@ router.post('/signup', async (req, res) => {
     });
 
     if (keyError) {
-      console.error('Failed to create default API Key for user:', keyError);
+      console.error('Failed to create default API Key for user:', JSON.stringify(keyError));
+      // Still return success but without apiKey so user knows to create one manually
+      return res.json({ user, apiKey: null, warning: 'Account created but API key generation failed. Please create one from the dashboard.' });
     }
 
     return res.json({
