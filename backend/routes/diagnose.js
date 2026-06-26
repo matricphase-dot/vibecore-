@@ -28,4 +28,21 @@ router.post('/diagnose', async (req, res) => {
   });
 });
 
+router.get('/env-check', (req, res) => {
+  const mask = (val) => {
+    if (!val) return 'not_set';
+    if (val.length <= 10) return 'set_but_short';
+    return `${val.substring(0, 5)}...${val.substring(val.length - 5)} (length: ${val.length})`;
+  };
+
+  res.json({
+    SUPABASE_URL: mask(process.env.SUPABASE_URL),
+    SUPABASE_SERVICE_ROLE_KEY: mask(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    SUPABASE_ANON_KEY: mask(process.env.SUPABASE_ANON_KEY),
+    GROQ_API_KEY: mask(process.env.GROQ_API_KEY),
+    PORT: process.env.PORT,
+    NODE_ENV: process.env.NODE_ENV
+  });
+});
+
 export default router;
