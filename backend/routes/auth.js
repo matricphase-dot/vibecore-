@@ -27,7 +27,6 @@ router.post('/signup', async (req, res) => {
     const { error: profileError } = await supabase.from('profiles').upsert({
       id: user.id,
       email: user.email,
-      credits: 100,
       is_admin: false,
       plan: 'free'
     }, { onConflict: 'id' });
