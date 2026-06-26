@@ -76,10 +76,10 @@ router.post('/completions', checkPlanRateLimit, async (req, res) => {
         if (error) console.error('Error writing exact cache usage log:', error);
       });
 
-      supabase.rpc('increment_request_count', {
+      Promise.resolve(supabase.rpc('increment_request_count', {
         p_user_id: req.user.id,
         p_api_key_id: req.user.keyId || null
-      }).catch(err => console.error('Error incrementing request count:', err));
+      })).catch(err => console.error('Error incrementing request count:', err));
 
       return res.json({
         id: `chatcmpl-${uuidv4()}`,
@@ -142,10 +142,10 @@ router.post('/completions', checkPlanRateLimit, async (req, res) => {
         if (error) console.error('Error writing semantic cache usage log:', error);
       });
 
-      supabase.rpc('increment_request_count', {
+      Promise.resolve(supabase.rpc('increment_request_count', {
         p_user_id: req.user.id,
         p_api_key_id: req.user.keyId || null
-      }).catch(err => console.error('Error incrementing request count:', err));
+      })).catch(err => console.error('Error incrementing request count:', err));
 
       return res.json({
         id: `chatcmpl-${uuidv4()}`,
@@ -220,10 +220,10 @@ router.post('/completions', checkPlanRateLimit, async (req, res) => {
       if (error) console.error('Error writing usage log:', error);
     });
 
-    supabase.rpc('increment_request_count', {
+    Promise.resolve(supabase.rpc('increment_request_count', {
       p_user_id: req.user.id,
       p_api_key_id: req.user.keyId || null
-    }).catch(err => console.error('Error incrementing request count:', err));
+    })).catch(err => console.error('Error incrementing request count:', err));
 
     return res.json({
       id: `chatcmpl-${uuidv4()}`,

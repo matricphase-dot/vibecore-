@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { supabase } from '../supabase.js';
+import { supabase, getAuthClient } from '../supabase.js';
 
 const router = express.Router();
 
@@ -71,7 +71,7 @@ router.post('/signin', async (req, res) => {
   }
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await getAuthClient().auth.signInWithPassword({ email, password });
     if (error || !data.session) {
       return res.status(401).json({ error: error ? error.message : 'Invalid login credentials' });
     }
@@ -92,7 +92,7 @@ router.post('/signout', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
-      await supabase.auth.signOut(token);
+      await getAuthClient().auth.signOut(token);
     }
   } catch (error) {
     console.error('Signout error:', error);
@@ -107,7 +107,7 @@ router.post('/refresh', async (req, res) => {
   }
 
   try {
-    const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+    const { data, error } = await getAuthClient().auth.refreshSession({ refresh_token });
     if (error || !data.session) {
       return res.status(401).json({ error: error ? error.message : 'Invalid or expired refresh token' });
     }

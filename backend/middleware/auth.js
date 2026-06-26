@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { supabase } from '../supabase.js';
+import { supabase, getAuthClient } from '../supabase.js';
 
 export async function validateApiKeyOrJwt(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -43,7 +43,7 @@ export async function validateApiKeyOrJwt(req, res, next) {
     }
 
     // 2. Supabase JWT Authentication
-    const { data: { user }, error: jwtError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: jwtError } = await getAuthClient().auth.getUser(token);
     if (jwtError || !user) {
       return res.status(401).json({ error: 'Invalid or expired user session token' });
     }

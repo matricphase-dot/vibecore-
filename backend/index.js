@@ -10,7 +10,6 @@ import keyRoutes from './routes/keys.js';
 import healthRoutes from './routes/health.js';
 import adminRoutes from './routes/admin.js';
 import paymentRoutes from './routes/payments.js';
-import diagnoseRoutes from './routes/diagnose.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,7 +41,6 @@ app.use('/api/keys', keyRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/diagnose', diagnoseRoutes);
 
 // 4. Global Error Handler
 app.use((err, req, res, next) => {
