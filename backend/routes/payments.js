@@ -14,10 +14,16 @@ const razorpay = new Razorpay({
 });
 
 // Initialize PayPal client
-const environment = new paypal.core.SandboxEnvironment(
-  process.env.PAYPAL_CLIENT_ID || 'placeholder_id',
-  process.env.PAYPAL_CLIENT_SECRET || 'placeholder_secret'
-);
+const isPaypalLive = process.env.PAYPAL_MODE === 'live' || (process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox');
+const environment = isPaypalLive
+  ? new paypal.core.LiveEnvironment(
+      process.env.PAYPAL_CLIENT_ID || 'placeholder_id',
+      process.env.PAYPAL_CLIENT_SECRET || 'placeholder_secret'
+    )
+  : new paypal.core.SandboxEnvironment(
+      process.env.PAYPAL_CLIENT_ID || 'placeholder_id',
+      process.env.PAYPAL_CLIENT_SECRET || 'placeholder_secret'
+    );
 const paypalClient = new paypal.core.PayPalHttpClient(environment);
 
 const PLAN_PRICES = {
