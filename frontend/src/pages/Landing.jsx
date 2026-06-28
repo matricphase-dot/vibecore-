@@ -17,20 +17,20 @@ export default function Landing({ session }) {
       .then(data => {
         if (data && !data.error) {
           setGlobalStats({
-            total_requests: data.total_requests || 12400,
-            total_tokens_saved: data.total_tokens_saved || 482000,
-            total_usd_saved: data.total_usd_saved || 24.10,
-            cache_hit_rate_pct: data.cache_hit_rate_pct || 42.5
+            total_requests: data.total_requests || 0,
+            total_tokens_saved: data.total_tokens_saved || 0,
+            total_usd_saved: data.total_usd_saved || 0,
+            cache_hit_rate_pct: data.cache_hit_rate_pct || 0
           });
         }
       })
       .catch(() => {
-        // Fallback mock stats if backend offline
+        // Fallback: show zeroes if backend offline — never show fabricated data
         setGlobalStats({
-          total_requests: 12480,
-          total_tokens_saved: 489200,
-          total_usd_saved: 24.46,
-          cache_hit_rate_pct: 42.1
+          total_requests: 0,
+          total_tokens_saved: 0,
+          total_usd_saved: 0,
+          cache_hit_rate_pct: 0
         });
       });
   }, []);
