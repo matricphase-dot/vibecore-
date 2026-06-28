@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../lib/api';
+import { apiFetch, supabase } from '../lib/api';
 import { 
   ArrowLeft, Users, ShieldAlert, BarChart3, 
   Terminal, ShieldCheck, Coins, Layers, Trash2, Activity
@@ -18,11 +18,28 @@ export default function Admin({ session }) {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [error, setError] = useState('');
+  const [verifying, setVerifying] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchAdminData();
-  }, []);
+    const verifyAdmin = async () => {
+      if (!session) { navigate('/login'); return; }
+      try {
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        if (profileError || !data?.is_admin) {
+          navigate('/dashboard');
+        } else {
+          setVerifying(false);
+          fetchAdminData();
+        }
+      } catch { navigate('/dashboard'); }
+    };
+    verifyAdmin();
+  }, [session, navigate]);
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -71,6 +88,15 @@ export default function Admin({ session }) {
       alert(err.message || 'Failed to delete user account registry');
     }
   };
+
+  if (verifying) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center space-y-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-400"></div>
+        <p className="text-xs text-gray-500 font-mono">Verifying admin credentials...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 px-4 py-12 relative overflow-hidden">
