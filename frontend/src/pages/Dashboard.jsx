@@ -374,16 +374,25 @@ export default function Dashboard({ session }) {
     }
   };
 
-  // Mock charts fallback if empty stats
-  const chartData = stats.length > 0 ? stats : [
-    { day: 'Mon', requests: 4 },
-    { day: 'Tue', requests: 12 },
-    { day: 'Wed', requests: 28 },
-    { day: 'Thu', requests: 18 },
-    { day: 'Fri', requests: 42 },
-    { day: 'Sat', requests: 35 },
-    { day: 'Sun', requests: 52 }
-  ];
+  // Dynamic 7-day empty chart data if stats is empty to reflect actual database state
+  const getEmptyChartData = () => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const result = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      result.push({
+        day: days[d.getDay()],
+        requests: 0,
+        usd_saved: 0,
+        tokens_saved: 0
+      });
+    }
+    return result;
+  };
+
+  const chartData = stats.length > 0 ? stats : getEmptyChartData();
 
   return (
     <div className="flex min-h-screen bg-gray-950">
