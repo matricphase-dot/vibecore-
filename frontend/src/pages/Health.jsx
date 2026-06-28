@@ -176,7 +176,6 @@ export default function Health() {
                 <p className="text-xs text-gray-400">Provides high-performance Llama inference fallbacks. Relies on `GROQ_API_KEY` configurations.</p>
               </div>
 
-              {/* Anthropic Card */}
               <div className="card text-left space-y-2">
                 <div className="flex justify-between items-center">
                   <h4 className="font-bold text-white text-sm">Anthropic Claude Integration</h4>
@@ -189,6 +188,36 @@ export default function Health() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-400">Premium fallback models powering Claude completions. Relies on `ANTHROPIC_API_KEY` configurations.</p>
+              </div>
+
+              {/* Razorpay Card */}
+              <div className="card text-left space-y-2">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-bold text-white text-sm">Razorpay Gateway (INR)</h4>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                    health?.checks?.razorpay === 'configured'
+                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                      : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                  }`}>
+                    {health?.checks?.razorpay === 'configured' ? 'Configured' : 'Mock Mode'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">Processes domestic payments and upgrades. Relies on `RAZORPAY_KEY_ID` and webhook secrets.</p>
+              </div>
+
+              {/* PayPal Card */}
+              <div className="card text-left space-y-2">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-bold text-white text-sm">PayPal Gateway (USD)</h4>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                    health?.checks?.paypal === 'configured'
+                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                      : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                  }`}>
+                    {health?.checks?.paypal === 'configured' ? 'Configured' : 'Mock Mode'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">Processes international payments and upgrades. Relies on `PAYPAL_CLIENT_ID` configurations.</p>
               </div>
             </div>
           </div>

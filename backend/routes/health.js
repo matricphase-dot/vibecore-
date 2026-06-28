@@ -11,7 +11,9 @@ router.get('/', async (req, res) => {
     gemma:     process.env.GEMMA_BASE_URL     ? 'configured' : 'not_configured',
     openai:    process.env.OPENAI_API_KEY     ? 'configured' : 'not_configured',
     groq:      process.env.GROQ_API_KEY       ? 'configured' : 'not_configured',
-    anthropic: process.env.ANTHROPIC_API_KEY  ? 'configured' : 'not_configured'
+    anthropic: process.env.ANTHROPIC_API_KEY  ? 'configured' : 'not_configured',
+    razorpay:  (process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.startsWith('placeholder')) ? 'configured' : 'not_configured',
+    paypal:    (process.env.PAYPAL_CLIENT_ID && !process.env.PAYPAL_CLIENT_ID.startsWith('placeholder')) ? 'configured' : 'not_configured'
   };
 
   try {
