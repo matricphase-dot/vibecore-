@@ -423,6 +423,14 @@ export default function Dashboard({ session }) {
               <Key size={18} /> API Keys
             </button>
             <button
+              onClick={() => setActiveTab('billing')}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'billing' ? 'bg-green-500/10 text-green-400' : 'text-gray-400 hover:bg-gray-900 hover:text-white'
+              }`}
+            >
+              <Coins size={18} /> Plans & Billing
+            </button>
+            <button
               onClick={() => navigate('/health')}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white transition-colors"
             >
@@ -760,6 +768,171 @@ const openai = new OpenAI({
               <div className="pt-4 border-t border-gray-800 text-left text-xs text-gray-500">
                 ⚠️ **Limit Notice:** Active keys are constrained by plan levels: Free plans allow up to 3 keys, Pro allows 10 keys, and Team plans offer unlimited key allocation.
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'billing' && (
+          <div className="space-y-6 text-left">
+            {/* 1. Current Plan Summary Card */}
+            <div className="card bg-gray-900 border-gray-800 p-6">
+              <h3 className="text-lg font-bold text-white mb-2">Subscription Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 uppercase tracking-wider block">Current Tier</span>
+                  <span className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase">
+                    {profile?.plan || 'free'}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 uppercase tracking-wider block">Monthly Usage</span>
+                  <span className="text-sm font-semibold text-white">
+                    {profile?.monthly_requests?.toLocaleString() || 0} / {
+                      profile?.plan === 'free' ? '100' :
+                      profile?.plan === 'pro' ? '50,000' : 'Unlimited'
+                    } requests
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 uppercase tracking-wider block">Renews / Resets On</span>
+                  <span className="text-sm font-semibold text-white">
+                    {profile?.month_reset_at ? new Date(profile.month_reset_at).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Plan Grid */}
+            <h3 className="text-lg font-bold text-white mt-8 mb-4">Select a Plan</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Free Plan */}
+              <div className={`card flex flex-col justify-between p-6 border-2 ${
+                profile?.plan === 'free' ? 'border-green-500 bg-green-950/5' : 'border-gray-800 bg-gray-900/40'
+              }`}>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-md font-bold text-white uppercase tracking-wider">Free</h4>
+                    <p className="text-xs text-gray-500 mt-1">For testing and personal sandbox development.</p>
+                  </div>
+                  <div className="text-3xl font-extrabold text-white">
+                    ₹0 <span className="text-xs text-gray-500 font-normal">/ month</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-gray-400 pt-4 border-t border-gray-800">
+                    <li className="flex items-center gap-2">✅ 100 requests / month</li>
+                    <li className="flex items-center gap-2">✅ 3 active API keys</li>
+                    <li className="flex items-center gap-2">❌ Semantic caching</li>
+                    <li className="flex items-center gap-2">❌ LLM routing (OpenAI/Anthropic)</li>
+                  </ul>
+                </div>
+                <div className="mt-8">
+                  {profile?.plan === 'free' ? (
+                    <span className="w-full text-center py-2 text-xs font-semibold text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg block uppercase tracking-wider">
+                      Current Plan
+                    </span>
+                  ) : (
+                    <span className="w-full text-center py-2 text-xs font-semibold text-gray-500 bg-gray-800 rounded-lg block uppercase tracking-wider">
+                      Included
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Pro Plan */}
+              <div className={`card flex flex-col justify-between p-6 border-2 relative overflow-hidden ${
+                profile?.plan === 'pro' ? 'border-green-500 bg-green-950/5' : 'border-gray-800 bg-gray-900/40'
+              }`}>
+                <div className="absolute top-0 right-0 bg-green-500 text-gray-950 text-[9px] font-extrabold px-3 py-1 uppercase tracking-wider rounded-bl-lg">
+                  Most Popular
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-md font-bold text-white uppercase tracking-wider">Pro</h4>
+                    <p className="text-xs text-gray-500 mt-1">For production applications and startups.</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-3xl font-extrabold text-white">₹1,999 <span className="text-xs text-gray-500 font-normal">/ month</span></div>
+                    <div className="text-xs text-gray-500 font-medium">or $19.00 USD / month</div>
+                  </div>
+                  <ul className="space-y-2 text-xs text-gray-400 pt-4 border-t border-gray-800">
+                    <li className="flex items-center gap-2">✅ 50,000 requests / month</li>
+                    <li className="flex items-center gap-2">✅ 10 active API keys</li>
+                    <li className="flex items-center gap-2">✅ Semantic caching enabled</li>
+                    <li className="flex items-center gap-2">✅ Multi-provider LLM routing</li>
+                  </ul>
+                </div>
+                <div className="mt-8 space-y-2">
+                  {profile?.plan === 'pro' ? (
+                    <span className="w-full text-center py-2 text-xs font-semibold text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg block uppercase tracking-wider">
+                      Current Plan
+                    </span>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        onClick={() => handleUpgrade('pro', 'razorpay')} 
+                        disabled={loading}
+                        className="btn-primary py-2 px-2 text-center text-[11px] font-bold tracking-wider cursor-pointer"
+                      >
+                        Pay INR
+                      </button>
+                      <button 
+                        onClick={() => handleUpgrade('pro', 'paypal')} 
+                        disabled={loading}
+                        className="btn-secondary py-2 px-2 text-center text-[11px] font-bold tracking-wider cursor-pointer"
+                      >
+                        Pay USD
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Team Plan */}
+              <div className={`card flex flex-col justify-between p-6 border-2 ${
+                profile?.plan === 'team' ? 'border-green-500 bg-green-950/5' : 'border-gray-800 bg-gray-900/40'
+              }`}>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-md font-bold text-white uppercase tracking-wider">Team</h4>
+                    <p className="text-xs text-gray-500 mt-1">For scale and enterprise workloads.</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-3xl font-extrabold text-white">₹7,999 <span className="text-xs text-gray-500 font-normal">/ month</span></div>
+                    <div className="text-xs text-gray-500 font-medium">or $79.00 USD / month</div>
+                  </div>
+                  <ul className="space-y-2 text-xs text-gray-400 pt-4 border-t border-gray-800">
+                    <li className="flex items-center gap-2">✅ Unlimited requests</li>
+                    <li className="flex items-center gap-2">✅ Unlimited API keys</li>
+                    <li className="flex items-center gap-2">✅ Priority support & custom routing</li>
+                    <li className="flex items-center gap-2">✅ Dedicated performance metrics</li>
+                  </ul>
+                </div>
+                <div className="mt-8 space-y-2">
+                  {profile?.plan === 'team' ? (
+                    <span className="w-full text-center py-2 text-xs font-semibold text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg block uppercase tracking-wider">
+                      Current Plan
+                    </span>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        onClick={() => handleUpgrade('team', 'razorpay')} 
+                        disabled={loading}
+                        className="btn-primary py-2 px-2 text-center text-[11px] font-bold tracking-wider cursor-pointer"
+                      >
+                        Pay INR
+                      </button>
+                      <button 
+                        onClick={() => handleUpgrade('team', 'paypal')} 
+                        disabled={loading}
+                        className="btn-secondary py-2 px-2 text-center text-[11px] font-bold tracking-wider cursor-pointer"
+                      >
+                        Pay USD
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
             </div>
           </div>
         )}
