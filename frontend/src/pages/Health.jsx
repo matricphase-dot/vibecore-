@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../lib/api';
+import { apiFetch, supabase } from '../lib/api';
 import { ArrowLeft, RefreshCw, Activity, CheckCircle2, AlertTriangle, CloudRain } from 'lucide-react';
 
-export default function Health() {
+export default function Health({ session }) {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [verifying, setVerifying] = useState(true);
   const navigate = useNavigate();
 
   const fetchHealth = async () => {
@@ -23,8 +25,40 @@ export default function Health() {
   };
 
   useEffect(() => {
-    fetchHealth();
-  }, []);
+    const verifyAdmin = async () => {
+      if (!session) {
+        navigate('/login');
+        return;
+      }
+      try {
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError || !data || !data.is_admin) {
+          navigate('/dashboard');
+        } else {
+          setIsAdmin(true);
+          setVerifying(false);
+          fetchHealth();
+        }
+      } catch (err) {
+        navigate('/dashboard');
+      }
+    };
+    verifyAdmin();
+  }, [session, navigate]);
+
+  if (verifying) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center space-y-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-400"></div>
+        <p className="text-xs text-gray-500 font-mono">Verifying authorization...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 px-4 py-12 relative overflow-hidden">

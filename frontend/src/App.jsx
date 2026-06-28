@@ -42,7 +42,7 @@ export default function App() {
           <Route path="/login" element={!session ? <Login /> : <Navigate to="/dashboard" />} />
           <Route path="/register" element={!session ? <Register /> : <Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={session ? <Dashboard session={session} /> : <Navigate to="/login" />} />
-          <Route path="/health" element={session ? <Health /> : <Navigate to="/login" />} />
+          <Route path="/health" element={session ? <Health session={session} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={session ? <Admin session={session} /> : <Navigate to="/login" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

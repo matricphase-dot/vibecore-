@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import { 
   ArrowLeft, Users, ShieldAlert, BarChart3, 
-  Terminal, ShieldCheck, Coins, Layers, Trash2 
+  Terminal, ShieldCheck, Coins, Layers, Trash2, Activity
 } from 'lucide-react';
 
 export default function Admin({ session }) {
@@ -82,9 +82,16 @@ export default function Admin({ session }) {
         <div className="flex justify-between items-center">
           <button 
             onClick={() => navigate('/dashboard')}
-            className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5"
+            className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5 cursor-pointer"
           >
             <ArrowLeft size={14} /> Back to Dashboard
+          </button>
+          
+          <button 
+            onClick={() => navigate('/health')}
+            className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5 cursor-pointer"
+          >
+            <Activity size={14} /> View System Health
           </button>
         </div>
 

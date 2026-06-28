@@ -439,19 +439,21 @@ export default function Dashboard({ session }) {
             >
               <Coins size={18} /> Plans & Billing
             </button>
-            <button
-              onClick={() => navigate('/health')}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white transition-colors"
-            >
-              <HeartPulse size={18} /> System Health
-            </button>
             {profile?.is_admin && (
-              <button
-                onClick={() => navigate('/admin')}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white transition-colors"
-              >
-                <ShieldCheck size={18} /> Admin Dashboard
-              </button>
+              <>
+                <button
+                  onClick={() => navigate('/health')}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white transition-colors cursor-pointer"
+                >
+                  <HeartPulse size={18} /> System Health
+                </button>
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white transition-colors cursor-pointer"
+                >
+                  <ShieldCheck size={18} /> Admin Dashboard
+                </button>
+              </>
             )}
           </nav>
         </div>
